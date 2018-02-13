@@ -1,0 +1,65 @@
+## Place your answers here.
+**************
+ Exercise : 2
+**************
+exploit-2a.py : We use the bug 1 mentioned in bugs.txt. Giving a request req = "GET /"+"A"*1559+"HTTP/1.0\r\n" + "\r\n" overwrites the return address of process client as buffer reqpath overflows which results in server crash(segmenation fault). We can modify the return address to any desired location.
+
+exploit-2b.py : We use the bug 4 mentioned in bugs.txt. Giving a large URI overflows the buffer pn[1024] which results in change of the return address of handler function.
+	req = "GET /"+"A"*1012+"HTTP/1.0\r\n" + "\r\n" 
+Here too we can overwrite the return address of handler function to any desired value.
+
+**************
+ Exercise : 3
+**************
+exploit-3.py : We use the bug 1 mentioned in bugs.txt. Here, we insert the malicous code in reqpath and then by overflow modify the return address of process_client function to point at the beginning of malicious code. We use NOPs sleds for smooth functioning. Since SYS_unlink is 10 which is newline so http_read_line will stop reading once we encounter '\n' character Hence in file shellcode.S we move value SYS_unlink(10) in parts so that shellcode is generated without '\n'. 
+The request sent is 
+	req = "GET /" + "\x90\x90\x90"+ shellcode + "A"*(stack_retaddr-stack_buffer-len(shellcode)-4 ) + struct.pack("<I",stack_buffer+1) + " HTTP/1.0\r\n" + "\r\n"
+This will unlink /home/httpd/grades.txt
+
+we can similarly use bug2, bug3, bug5 listed in bugs.txt can be exploited to inject the malicious code in the stack and delete the grades.txt file.
+
+However, in bug4, the handler function gets modified hence such exploit wont occur in this case.
+
+*************
+ Exercise : 4
+*************
+
+
+
+*************
+ Exercise : 5
+*************
+DoS1 : We can make many concurrent request to ther server which will exhaust the it's memory and gives error cannot allocate memory.
+The script for this is present in dos.sh. run as bash dos.sh
+
+This will make the server unfunctional for generic user and result in a dos attack.
+However, the attacker can only hang the server this way and not inject some malicious code or access some unauthrized file. To prevent such attack make the fd non blocking.
+
+Unauthorized Access : We can access any files on the server by providing the file path in uri_request. So, we can access file like passwd and thus the attacker can have access to confidential information or know how other scripts on server works.
+The script for this is present in exploit-5a.py
+	req = "GET /../../../etc/passwd HTTP1.01\r\n"+"\r\n"
+
+This works because the open sytem call opens any file if valid pathname is provided.
+This can be prevented by making the lab directory as root in zookld in line 170.
+	chroot(/home/httpd/lab)
+This will not allow the attacker to pass beyond lab and ../ command will always bounce back to lab.	We can also check for characters like '..' in uri and invalidate any such request.
+
+Slow-lorris Attack : In the file zookd.c line 56 when a request is accepted the server calls the function process_client without fork(). Thus, the server doesn;t handle the request concurrently. We can take an advantage of this by performing slow lorris attack.Which will make the server unfunctional for other requests and cause in DoS attack. 
+So in the function http_read_line the server reads the header unless a '\n' character is encountered or buffer limit is exceeded. Now in slow-lorris attack what we do is we send incomplete request header. In our case a request like req = "G" should suffice. This will cause the server to wait for the request to get completed and hang it.
+This can be prevented by setting a timer for header to recive and if the complete header is not recieved in that time then stop the connection. Also, a child process should be created while calling to process client to make the server concurrent.  
+Limitations are similar to DoS1 attack.
+
+
+*************
+ Exercise : 6
+*************
+Using Safe functions:
+So our main task here is to replace all the unsafe functions such as sprintf, strcat, strcpy with safe functions like snprintf, strncat, strncpy respectively.
+
+url_decode function:
+We need to check the length of buffer which gets overwritten here.
+
+Concurrent Server :
+fork() can be used each time process_client function is called as explained in exercise 5.
+
+Modified code :

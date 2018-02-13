@@ -1,0 +1,40 @@
+#
+# [file:#lines]
+# desc
+#
+
+[zookd.c:63]
+In line 63 reqpath[1536] buffer can be overflowed by giving a very large file location path in URL.This overwrites the return address of process_client process and the server stops.
+	req = "GET /"+"A"*1559+"HTTP/1.0\r\n" + "\r\n"
+In the line 70 the function http_request_line overwrites some part of env[4096] bufffer in reqpath.However, since we changed the return address the stack canaries will detect it.
+   
+	<errmsg = http_request_line(fd, reqpath, env, &env_len))>
+   
+[http.c:118]
+buf[4096] gets written in envar[1024] in line 163. sprintf is unsafe so by giving a long enough header request the return address can be overwritten.
+	req = "GET / HTTP/1.0\r\n"+ "A"*1050 + ": hack\r\n" + "\r\n"
+However, the stack canaries will detect overflow as return address is modified.
+
+    <sprintf(envar,"Http_%s",buf)>
+
+[http.c:117]
+value[1024] gets overwritten by request header value stored in buf[4096] in the line 156 without checking the size of sp pointer.So for a very large request header value we can overflow the buffer and even change the vlaue of envar which is just above it.
+	req = "GET / HTTP/1.0\r\n"+ "hack: "+"A"*1050 + "\r\n"
+Here, the stack canaries will detect the overflow since we changed return address
+	
+	<urldecode(value,sp)>
+
+[http.c:280]
+Here, the buffer pn[1024] can be overflowed by giving a very large URI in zookfs.c line 49 which is stored in name and later gets overwritten in pn using strcat.
+	req = "GET /"+"A"*1012+"HTTP/1.0\r\n" + "\r\n"
+ We know that strcat is unsafe since it doesn't check the boundaries.The overflow will change the vallue of handler function so canaries won't be of help in this case.
+	
+	<strcat(pn,name)>
+
+[http.c:309]
+buf[1024] can be overflowed in function http_serve_file in line no. 310 by the request_uri if PATH_INFO is set and thus gives us segmenation fault as the return address is changed.
+	req = "GET /zoobar/media/zoobar.css/" +"A"*1050 + " HTTP/1.0\r\n" + "\r\n"
+Note however for this to work the request_uri should have some valid filename before. Stack canaries will detect the overflow as the return address is modified.
+	<sprintf(buf, "%s%s", pn, getenv("PATH_INFO"));>
+
+# many more come here

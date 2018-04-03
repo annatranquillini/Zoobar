@@ -11,8 +11,8 @@ Privilege separation and server-side sandboxing
 
 
 # lab3:
-browser-based attacks
-  1)Auth Token Theft
-  2)Cross-Site Request Forgery
-  3)Side Channels and Phishing
-  4)Profile Worm
+Browser-based attacks
+1)Auth Token Theft
+2)Cross-Site Request Forgery
+3)Side Channels and Phishing
+4)Profile Worm

